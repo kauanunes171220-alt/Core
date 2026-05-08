@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal CAIC - Mário Quintana</title>
+    <style>
+        /* --- TEMA E UI MODERNA (VERDE E BRANCO) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #10b981; /* Verde Escola */
+            --primary-dark: #059669; /* Verde Escuro */
+            --secondary: #34d399;
+            --bg-gradient: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+            --text-color: #1f2937;
+            --nav-bg: rgba(255, 255, 255, 0.95);
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --input-bg: #f9fafb;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+            --card-radius: 20px;
+            --msg-others: #ffffff;
+            --msg-others-border: #e5e7eb;
+            --particle-color: rgba(16, 185, 129, 0.15);
+        }
+
+        /* --- TEMA DARK (PRETO E VERDE) --- */
+        body.dark-mode {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #34d399;
+            --bg-gradient: linear-gradient(135deg, #050505 0%, #111827 100%);
+            --text-color: #f9fafb;
+            --nav-bg: rgba(17, 24, 39, 0.95);
+            --card-bg: #1f2937;
+            --border-color: #374151;
+            --input-bg: #374151;
+            --msg-others: #374151;
+            --msg-others-border: #4b5563;
+            --particle-color: rgba(16, 185, 129, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        body { background: var(--bg-gradient); color: var(--text-color); height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background 0.3s, color 0.3s; position: relative; }
+
+        /* Partículas de fundo */
+        #particles-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+        /* --- UTILITÁRIOS --- */
+        .hidden { display: none !important; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: var(--input-bg); border: 2px solid var(--border-color); }
+        .btn-small { padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 10px; background: var(--primary); color: white; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); z-index: 1; position: relative; }
+        .btn-small:active { transform: scale(0.95); }
+        .btn-danger { background: #ef4444; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2); }
+        
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .badge-admin { background: #fee2e2; color: #b91c1c; }
+        .badge-lider { background: #fef3c7; color: #b45309; }
+        .badge-diretor { background: #dcfce7; color: #166534; }
+
+        /* --- AUTENTICAÇÃO --- */
+        #login-screen, #signup-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; overflow-y: auto; z-index: 2; position: relative; }
+        #signup-screen { display: none; }
+        
+        .login-box { width: 100%; max-width: 400px; text-align: center; background: var(--card-bg); padding: 40px 30px; border-radius: var(--card-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); backdrop-filter: blur(10px); }
+        .login-box h1 { margin-bottom: 5px; color: var(--primary); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        .login-box p.subtitle { margin-bottom: 25px; color: #6b7280; font-size: 15px; }
+        
+        input, select, textarea { width: 100%; padding: 15px; margin: 8px 0; border: 2px solid var(--border-color); border-radius: 14px; font-size: 14px; transition: all 0.2s; background-color: var(--input-bg); color: var(--text-color); resize: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background-color: var(--card-bg); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+        
+        .row { display: flex; gap: 10px; }
+        
+        button.btn-primary { width: 100%; padding: 15px; background: linear-gradient(to right, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 15px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        button.btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3); }
+        
+        .toggle-link { color: var(--primary); margin-top: 20px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; }
+        .toggle-link:hover { text-decoration: underline; }
+        .error-msg { color: #ef4444; font-size: 13px; font-weight: 500; margin-top: 10px; display: none; background: #fef2f2; padding: 12px; border-radius: 10px; border: 1px solid #fee2e2; }
+
+        /* --- APP MAIN --- */
+        #app-screen { display: none; flex-direction: column; height: 100vh; position: relative; z-index: 2; }
+        
+        header { background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; z-index: 10; padding-top: max(15px, env(safe-area-inset-top)); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        header .logo-area { display: flex; align-items: center; gap: 10px; font-size: 18px; color: var(--primary); }
+        .header-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        
+        main { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; position: relative; z-index: 1; }
+        
+        .view { display: none; opacity: 0; transform: scale(0.97) translateY(10px); }
+        .view.active { display: block; animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.97) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .card { background: var(--card-bg); padding: 22px; border-radius: var(--card-radius); box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border-color); position: relative; overflow: hidden; }
+        .card h3 { margin-bottom: 15px; color: var(--text-color); font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+        /* --- CHAT --- */
+        .chat-tabs { display: flex; background: var(--card-bg); border-radius: 14px; margin-bottom: 15px; padding: 6px; gap: 6px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; border: none; background: transparent; font-weight: 700; font-size: 13px; color: #6b7280; cursor: pointer; border-radius: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-tab.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); transform: scale(1.02); }
+        
+        .chat-box { background: var(--card-bg); height: 62vh; border-radius: var(--card-radius); box-shadow: var(--shadow); display: flex; flex-direction: column; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
+        .chat-messages { flex: 1; padding: 20px 15px; overflow-y: auto; background: var(--bg-gradient); display: flex; flex-direction: column; gap: 18px; scroll-behavior: smooth; }
+        
+        .msg-wrapper { display: flex; align-items: flex-end; gap: 10px; max-width: 88%; position: relative; will-change: transform; }
+        .msg-wrapper.mine { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-wrapper.mine .msg-bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .msg-wrapper.others { align-self: flex-start; }
+        .msg-wrapper.others .msg-bubble { background: var(--msg-others); border: 1px solid var(--msg-others-border); color: var(--text-color); border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        
+        .msg-avatar { cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
+        .msg-avatar:active { transform: scale(0.85); }
+        
+        .msg-content { display: flex; flex-direction: column; }
+        .msg-sender { font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 4px; margin-left: 4px; }
+        .msg-wrapper.mine .msg-sender { display: none; }
+        
+        .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-break: break-word; position: relative; transition: filter 0.2s; }
+        .msg-bubble a { color: inherit; text-decoration: underline; font-weight: 600; }
+        
+        .msg-time { font-size: 10px; opacity: 0.7; margin-left: 10px; float: right; margin-top: 8px; font-weight: 600; }
+        
+        .msg-actions { display: flex; gap: 5px; opacity: 0; transition: opacity 0.2s; position: absolute; top: -15px; right: 0; background: var(--card-bg); padding: 4px 8px; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); z-index: 5; }
+        .msg-wrapper:hover .msg-actions, .msg-wrapper:active .msg-actions { opacity: 1; }
+        .msg-wrapper.mine .msg-actions { left: 0; right: auto; }
+        .action-btn { background: none; border: none; font-size: 14px; cursor: pointer; color: #6b7280; transition: color 0.2s; }
+        .action-btn:hover { color: var(--primary); }
+
+        .reply-quote { background: rgba(0,0,0,0.1); border-left: 4px solid rgba(255,255,255,0.5); padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
+        .others .reply-quote { background: rgba(0,0,0,0.04); border-left-color: var(--primary); }
+
+        .reply-banner { display: none; align-items: center; justify-content: space-between; padding: 10px 15px; background: var(--input-bg); border-top: 1px solid var(--border-color); font-size: 12px; color: var(--text-color); border-left: 4px solid var(--primary); animation: slideInReply 0.2s ease-out; }
+        @keyframes slideInReply { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .reply-banner strong { color: var(--primary); }
+
+        .chat-input-area { display: flex; padding: 15px; background: var(--card-bg); border-top: 1px solid var(--border-color); gap: 10px; align-items: center; z-index: 2; }
+        .chat-input-area input { margin: 0; border-radius: 25px; padding: 14px 20px; flex: 1; }
+        .chat-input-area button { margin: 0; width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: white; font-size: 18px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .chat-input-area button:active { transform: scale(0.9); }
+
+        /* --- PERFIL MODAL --- */
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 50; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: var(--card-bg); width: 90%; max-width: 340px; padding: 30px 25px; border-radius: 24px; text-align: center; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes modalPop { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        .close-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; color: #9ca3af; transition: 0.2s; }
+        .close-modal:hover { color: #ef4444; }
+        .modal-avatar { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid var(--primary); background: var(--input-bg); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+
+        /* --- NAVEGAÇÃO --- */
+        nav { background: var(--nav-bg); backdrop-filter: blur(15px); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 12px 10px; padding-bottom: max(12px, env(safe-area-inset-bottom)); z-index: 20; border-top: 1px solid var(--border-color); }
+        .nav-item { flex: 1; background: none; color: #9ca3af; border: none; font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 8px 0; border-radius: 12px; }
+        .nav-item.active { color: var(--primary); background: rgba(16, 185, 129, 0.08); }
+        .nav-icon { font-size: 22px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.15); }
+
+        /* --- PAINEIS ADMIN E MATERIAIS --- */
+        .admin-panel { background: #f0fdf4; border: 2px dashed #4ade80; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+        body.dark-mode .admin-panel { background: #064e3b; border-color: #059669; }
+        .admin-panel h4 { color: #166534; margin-bottom: 15px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+        body.dark-mode .admin-panel h4 { color: #a7f3d0; }
+        
+        .material-item { padding: 15px; border-left: 4px solid var(--primary); background: var(--input-bg); border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s; }
+        .material-item:hover { transform: translateX(5px); }
+        .material-item a { text-decoration: none; color: var(--primary); font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+    </style>
+</head>
+<body>
+    <canvas id="particles-bg"></canvas>
+
+    <audio id="snd-send" src="https://files.catbox.moe/0tpnma.mp3"></audio>
+    <audio id="snd-recv" src="https://files.catbox.moe/7nxc59.mp3"></audio>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <button class="close-modal" onclick="fecharModal()">&times;</button>
+            <img id="modal-foto" src="" class="modal-avatar">
+            <h3 id="modal-nome" style="color: var(--text-color); font-weight: 800; font-size: 20px;">Carregando...</h3>
+            <p id="modal-cargo" class="badge" style="margin-top: 5px;"></p>
+            <p id="modal-bio" style="font-size: 14px; color: #6b7280; margin: 15px 0; line-height: 1.5;"></p>
+            
+            <div class="row" style="justify-content: center; gap: 10px;">
+                <button id="btn-chat-privado" class="btn-small" style="font-size: 14px; padding: 10px 15px; display: none;" onclick="iniciarChatPrivado()">💬 Mensagem</button>
+                <button id="btn-banir" class="btn-small btn-danger" style="display: none;" onclick="banirUsuario()">🔨 Banir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>🏫 Portal CAIC</h1>
+            <p class="subtitle">Conectando nossa escola</p>
+            <input type="tel" id="telefone-login" placeholder="📱 Seu Celular (Ex: 51999999999)">
+            <input type="password" id="senha" placeholder="🔒 Sua senha">
+            <button id="btn-login" class="btn-primary">Entrar no Portal</button>
+            <p id="error-msg-login" class="error-msg"></p>
+            <p class="toggle-link" id="go-to-signup">É novo? Crie sua conta aqui</p>
+        </div>
+    </div>
+
+    <div id="signup-screen">
+        <div class="login-box" style="padding: 30px;">
+            <h1>Criar Conta</h1>
+            <p class="subtitle">Preencha com seus dados reais</p>
+            <input type="text" id="nome-signup" placeholder="👤 Nome e Sobrenome">
+            <input type="tel" id="telefone-signup" placeholder="📱 Celular (Ex: 51999999999)">
+            
+            <select id="cargo-signup">
+                <option value="aluno">Sou Aluno</option>
+                <option value="professor">Sou Professor</option>
+                <option value="lider">Sou Líder de Turma</option>
+                <option value="clube">Presidente de Clube</option>
+                <option value="diretor">Sou Diretor(a)</option>
+                <option value="zelador">Sou Zelador(a)</option>
+                <option value="cozinheiro">Sou da Cozinha</option>
+                <option value="adm">Administrador do Sistema (Secreto)</option>
+            </select>
+
+            <div class="row" id="area-turma">
+                <select id="ano-escolar">
+                    <option value="">Ano</option>
+                    <option value="1">1º Ano (Fund.)</option> <option value="2">2º Ano</option> <option value="3">3º Ano</option>
+                    <option value="4">4º Ano</option> <option value="5">5º Ano</option> <option value="6">6º Ano</option>
+                    <option value="7">7º Ano</option> <option value="8">8º Ano</option> <option value="9">9º Ano</option>
+                    <option value="1EM">1º Ano (Médio)</option> <option value="2EM">2º Ano (Médio)</option> <option value="3EM">3º Ano (Médio)</option>
+                </select>
+                <select id="turma-escolar" disabled><option value="">Turma</option></select>
+            </div>
+            
+            <input type="password" id="senha-signup" placeholder="🔑 Crie uma senha (mín. 6)">
+            <button id="btn-signup" class="btn-primary">Concluir Cadastro</button>
+            <p id="error-msg-signup" class="error-msg"></p>
+            <p class="toggle-link" id="go-to-login">Já tem conta? Faça login</p>
+        </div>
+    </div>
+
+    <div id="app-screen">
+        <header>
+            <div class="logo-area">🎓 <span id="user-role" style="color: var(--text-color); font-size: 15px;">Carregando...</span></div>
+            <button class="header-btn" id="btn-logout">Sair 🚪</button>
+        </header>
+        
+        <main>
+            <div id="view-inicio" class="view active">
+
+                <div class="card hidden" id="card-prof-admin">
+                    <h3>👑 Painel de Controle (Admin)</h3>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Você tem permissões avançadas.</p>
+                    <div class="row">
+                        <button class="btn-small">Gerar Relatórios</button>
+                        <button class="btn-small btn-danger">Apagar Geral</button>
+                    </div>
+                </div>
+
+                <div class="admin-panel hidden" id="admin-avisos">
+                    <h4>📢 Postar Aviso (Direção/Adms)</h4>
+                    <input type="text" id="aviso-titulo" placeholder="Título (Ex: Reunião de Pais)">
+                    <textarea id="aviso-texto" placeholder="Conteúdo do aviso..."></textarea>
+                    <select id="aviso-tipo">
+                        <option value="info">Informação (Azul/Verde)</option>
+                        <option value="alerta">Alerta (Amarelo)</option>
+                    </select>
+                    <button class="btn-primary" style="padding: 10px;" onclick="salvarAviso()">Adicionar Aviso</button>
+                </div>
+
+                <div class="card">
+                    <h3>📢 Avisos da Direção</h3>
+                    <div id="lista-avisos">
+                        <p style="text-align: center; color: #6b7280; font-size: 14px;">Carregando avisos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-materiais" class="view">
+                <div class="admin-panel hidden" id="admin-materiais">
+                    <h4>📝 Publicar Material (Professores/Adms)</h4>
+                    <div class="row">
+                        <select id="mat-ano" style="flex: 1;">
+                            <option value="1">1º Ano</option> <option value="2">2º Ano</option> <option value="3">3º Ano</option>
+                            <option value="4">4º Ano</option> <option value="5">5º Ano</option> <option value="6">6º Ano</option>
+                            <option value="7">7º Ano</option> <option value="8">8º Ano</option> <option value="9">9º Ano</option>
+                            <option value="1EM">1º Ano (Médio)</option> <option value="2EM">2º Ano (Médio)</option> <option value="3EM">3º Ano (Médio)</option>
+                        </select>
+                        <select id="mat-turma" style="flex: 1;">
+                            <option value="A">Turma A</option><option value="B">Turma B</option><option value="C">Turma C</option><option value="D">Turma D</option>
+                        </select>
+                    </div>
+                    <input type="text" id="mat-materia" placeholder="Qual a matéria? (Ex: Matemática)">
+                    <input type="text" id="mat-data" placeholder="Data (Ex: dd/mm)">
+                    <input type="text" id="mat-titulo" placeholder="Título (Ex: Lista de Equações)">
+                    <input type="text" id="mat-link" placeholder="Link do Drive ou Arquivo (Opcional)">
+                    <button class="btn-primary" style="padding: 12px;" onclick="salvarMaterial()">Publicar para Alunos</button>
+                </div>
+                
+                <div class="card">
+                    <h3>📚 Materiais da Sua Turma</h3>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Aqui aparecem os materiais postados para seu ano/turma.</p>
+                    <div id="lista-materiais">
+                        <p style="text-align: center; color: #6b7280; font-size: 14px;">Carregando materiais...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-pesquisa" class="view">
+                <div class="card">
+                    <h3>🔍 Encontrar Pessoas</h3>
+                    <input type="text" id="input-pesquisa" placeholder="Buscar por nome, turma ou cargo...">
+                    <button class="btn-primary" onclick="pesquisarUsuarios()" style="margin-top: 10px; padding: 12px;">Buscar</button>
+                </div>
+                <div id="resultado-pesquisa" style="margin-top: 15px;">
+                    <p style="text-align: center; color: #6b7280; font-size: 14px;">Use a barra acima para pesquisar colegas e professores.</p>
+                </div>
+            </div>
+
+            <div id="view-chat" class="view">
+                <div class="chat-tabs">
+                    <button class="chat-tab active" id="tab-geral" onclick="trocarSalaChat('Geral', this)">Pátio Geral</button>
+                    <button class="chat-tab" id="tab-turma" onclick="trocarSalaChat('Turma', this)">Minha Sala</button>
+                    <button class="chat-tab" id="tab-privado" style="display: none;" onclick="trocarSalaChat('Privado_Keep', this)"></button>
+                </div>
+                <div class="chat-box">
+                    <div class="chat-messages" id="chat-messages-container"></div>
+                    
+                    <div id="reply-banner" class="reply-banner">
+                        <div>Respondendo a <strong id="reply-name">Nome</strong>: <span id="reply-text">texto</span></div>
+                        <button onclick="cancelarResposta()" style="background:none; border:none; color: #ef4444; font-weight:bold; cursor:pointer;">X</button>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Mensagem... (Arraste p/ direita para responder)">
+                        <button id="btn-send-msg">➔</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-cardapio" class="view">
+                <div class="admin-panel hidden" id="admin-cardapio">
+                    <h4>🍲 Editar Cardápio (Cozinha/Adm)</h4>
+                    <select id="card-dia">
+                        <option value="Segunda">Segunda-feira</option><option value="Terca">Terça-feira</option><option value="Quarta">Quarta-feira</option><option value="Quinta">Quinta-feira</option><option value="Sexta">Sexta-feira</option>
+                    </select>
+                    <textarea id="card-desc" placeholder="Descreva a refeição..." rows="2"></textarea>
+                    <button class="btn-primary" style="padding: 10px;" onclick="salvarCardapio()">Atualizar Dia</button>
+                </div>
+
+                <div class="card">
+                    <h3>🍽️ Cardápio da Semana</h3>
+                    <div id="lista-cardapio" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                </div>
+            </div>
+
+            <div id="view-perfil" class="view">
+                <div class="card" style="text-align: center; position: relative;">
+                    <button id="btn-dark-mode" class="btn-small" style="position: absolute; top: 15px; right: 15px; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);">🌙 Tema</button>
+                    
+                    <img id="meu-avatar-preview" src="" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid var(--primary); background: var(--input-bg); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                    <h3 id="meu-nome-display" style="justify-content: center; font-size: 22px;">Nome</h3>
+                    <p id="meu-cargo-display" class="badge badge-lider" style="margin-bottom: 15px;"></p>
+                    
+                    <button class="btn-small" id="btn-toggle-edit" style="margin-bottom: 15px; width: 100%;">✏️ Editar Meu Perfil</button>
+                    
+                    <div id="area-edicao" class="hidden" style="text-align: left; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <label style="font-size: 13px; font-weight: bold;">Link da sua Foto (URL Opcional):</label>
+                        <input type="text" id="edit-foto" placeholder="https://link-da-sua-foto.com/img.jpg">
+                        <p style="font-size: 11px; color: #9ca3af; margin-bottom: 15px;">Deixe em branco para um avatar aleatório fofo.</p>
+                        
+                        <label style="font-size: 13px; font-weight: bold; display:block;">Sua Biografia:</label>
+                        <textarea id="edit-bio" placeholder="Escreva algo sobre você..." rows="3"></textarea>
+                        
+                        <button class="btn-primary" id="btn-save-profile">Salvar Alterações</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav>
+            <button class="nav-item active" onclick="mudarAba('inicio', this)"><span class="nav-icon">🏠</span><span>Início</span></button>
+            <button class="nav-item" onclick="mudarAba('materiais', this)"><span class="nav-icon">📚</span><span>Aulas</span></button>
+            <button class="nav-item" onclick="mudarAba('pesquisa', this)"><span class="nav-icon">🔍</span><span>Buscar</span></button>
+            <button class="nav-item" id="nav-chat" onclick="mudarAba('chat', this)"><span class="nav-icon">💬</span><span>Chat</span></button>
+            <button class="nav-item" onclick="mudarAba('cardapio', this)"><span class="nav-icon">🍽️</span><span>Cozinha</span></button>
+            <button class="nav-item" onclick="mudarAba('perfil', this)"><span class="nav-icon">👤</span><span>Perfil</span></button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, get, set, push, onChildAdded, onChildRemoved, update, off, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyASGunRLaF7jMS_-T7JNz2jRHW7xN_9aio",
+            authDomain: "e-e-e-mario-quintana-caic.firebaseapp.com",
+            databaseURL: "https://e-e-e-mario-quintana-caic-default-rtdb.firebaseio.com",
+            projectId: "e-e-e-mario-quintana-caic",
+            storageBucket: "e-e-e-mario-quintana-caic.firebasestorage.app",
+            messagingSenderId: "1038938029555",
+            appId: "1:1038938029555:web:dd49b9cec2f8bbec3f6686",
+            measurementId: "G-J4ZDRMN9BM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentUserData = null;
+        let currentUserId = null;
+        let salaAtual = "Geral";
+        let chatRefAtual = null; 
+        let isSuperAdmin = false;
+        
+        let perfilAbertoUid = null;
+        let perfilAbertoNome = "";
+
+        let replyingTo = null; 
+        let hiddenMsgs = JSON.parse(localStorage.getItem('hiddenMsgs')) || [];
+
+        // --- SISTEMA DE PARTÍCULAS ---
+        const canvas = document.getElementById('particles-bg');
+        const ctx = canvas.getContext('2d');
+        let particlesArray = [];
+        
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * -0.5 - 0.1;
+                this.speedX = Math.random() * 0.4 - 0.2;
+            }
+            update() {
+                this.y += this.speedY; this.x += this.speedX;
+                if(this.y < 0) { this.y = canvas.height; this.x = Math.random() * canvas.width; }
+            }
+            draw() {
+                const particleColor = getComputedStyle(document.body).getPropertyValue('--particle-color').trim();
+                ctx.fillStyle = particleColor;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+        function initParticles() { for(let i=0; i<30; i++) particlesArray.push(new Particle()); }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particlesArray.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles(); animateParticles();
+
+        // --- DARK MODE ---
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if(isDarkMode) document.body.classList.add('dark-mode');
+        document.getElementById('btn-dark-mode').addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('darkMode', isDarkMode);
+            document.body.classList.toggle('dark-mode', isDarkMode);
+        });
+
+        function getAvatarUrl(foto, uid) {
+            if (foto && foto.trim() !== "") return foto;
+            return `https://api.dicebear.com/8.x/bottts/svg?seed=${uid}&backgroundColor=10b981`;
+        }
+
+        window.mudarAba = function(viewId, btn) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            
+            const selectedView = document.getElementById('view-' + viewId);
+            void selectedView.offsetWidth; 
+            selectedView.classList.add('active');
+            btn.classList.add('active');
+        };
+
+        // --- FORMULÁRIO DE CADASTRO (Lógica de Turmas) ---
+        document.getElementById('cargo-signup').addEventListener('change', (e) => {
+            const c = e.target.value;
+            if(c === 'zelador' || c === 'cozinheiro' || c === 'diretor' || c === 'adm') {
+                document.getElementById('area-turma').style.display = 'none';
+            } else {
+                document.getElementById('area-turma').style.display = 'flex';
+            }
+        });
+
+        document.getElementById('ano-escolar').addEventListener('change', (e) => {
+            const ano = e.target.value;
+            const turmaSelect = document.getElementById('turma-escolar');
+            turmaSelect.innerHTML = '<option value="">Turma</option>';
+            if (!ano) { turmaSelect.disabled = true; return; }
+            turmaSelect.disabled = false;
+            // Padrão de 4 turmas por ano (A, B, C, D)
+            for (let i = 0; i < 4; i++) turmaSelect.innerHTML += `<option value="${ano}${String.fromCharCode(65+i)}">${ano} - Turma ${String.fromCharCode(65+i)}</option>`;
+        });
+
+        document.getElementById('go-to-signup').addEventListener('click', () => { document.getElementById('login-screen').style.display = 'none'; document.getElementById('signup-screen').style.display = 'flex'; });
+        document.getElementById('go-to-login').addEventListener('click', () => { document.getElementById('signup-screen').style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; });
+
+        function showError(elId, msg) { const el = document.getElementById(elId); el.style.display = 'block'; el.innerText = msg; }
+
+        document.getElementById('btn-signup').addEventListener('click', () => {
+            const nome = document.getElementById('nome-signup').value.trim();
+            const celular = document.getElementById('telefone-signup').value.replace(/\D/g, '');
+            const cargo = document.getElementById('cargo-signup').value;
+            const ano = document.getElementById('ano-escolar').value;
+            const turma = document.getElementById('turma-escolar').value;
+            const senha = document.getElementById('senha-signup').value;
+            
+            if (nome.split(' ').length < 2) return showError('error-msg-signup', "Digite Nome e Sobrenome.");
+            if (celular.length < 8) return showError('error-msg-signup', "Celular inválido.");
+            if (['aluno', 'professor', 'lider'].includes(cargo) && (!ano || !turma)) return showError('error-msg-signup', "Selecione Ano e Turma.");
+            if (senha.length < 6) return showError('error-msg-signup', "Senha: mín 6 caracteres.");
+
+            const pseudoEmail = celular + "@caic.app";
+            document.getElementById('btn-signup').innerText = "Criando...";
+
+            createUserWithEmailAndPassword(auth, pseudoEmail, senha).then((userCred) => {
+                set(ref(db, 'Usuarios/' + userCred.user.uid), {
+                    nome, celular, cargo, turma: turma || "Geral", foto: "", bio: "Olá, sou novo aqui!", banned: false
+                }).then(() => document.getElementById('btn-signup').innerText = "Concluir Cadastro");
+            }).catch(e => { showError('error-msg-signup', "Erro: " + e.message); document.getElementById('btn-signup').innerText = "Concluir Cadastro"; });
+        });
+
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const celular = document.getElementById('telefone-login').value.replace(/\D/g, '');
+            const senha = document.getElementById('senha').value;
+            if(!celular || !senha) return showError('error-msg-login', "Preencha tudo.");
+            document.getElementById('btn-login').innerText = "Carregando...";
+            signInWithEmailAndPassword(auth, celular + "@caic.app", senha).catch(() => { showError('error-msg-login', "Dados incorretos."); document.getElementById('btn-login').innerText = "Entrar no Portal"; });
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                const snap = await get(ref(db, 'Usuarios/' + user.uid));
+                
+                if (snap.exists()) {
+                    currentUserData = snap.val();
+                    
+                    if(currentUserData.banned) {
+                        alert("Sua conta foi banida do portal.");
+                        signOut(auth);
+                        return;
+                    }
+
+                    document.getElementById('login-screen').style.display = "none"; document.getElementById('signup-screen').style.display = "none"; document.getElementById('app-screen').style.display = "flex";
+                    
+                    isSuperAdmin = (currentUserData.cargo === 'adm' || currentUserData.cargo === 'diretor' || currentUserData.cargo === 'coordenador');
+                    
+                    let displayRole = currentUserData.cargo;
+                    let prefixRoleText = "";
+                    
+                    if(currentUserData.cargo === 'adm') {
+                        displayRole = 'aluno';
+                        prefixRoleText = "Administrador (Oculto) - ";
+                    }
+
+                    let roleTxt = prefixRoleText + displayRole.toUpperCase();
+                    if (['aluno', 'lider', 'professor'].includes(displayRole)) roleTxt += ` - ${currentUserData.turma}`;
+                    
+                    document.getElementById('user-role').innerText = roleTxt;
+                    document.getElementById('meu-nome-display').innerText = currentUserData.nome;
+                    document.getElementById('meu-cargo-display').innerText = roleTxt;
+                    document.getElementById('edit-foto').value = currentUserData.foto || "";
+                    document.getElementById('edit-bio').value = currentUserData.bio || "";
+                    document.getElementById('meu-avatar-preview').src = getAvatarUrl(currentUserData.foto, currentUserId);
+
+                    aplicarPermissoes(currentUserData.cargo);
+                    trocarSalaChat("Geral", document.getElementById('tab-geral'));
+                    carregarCardapio();
+                    carregarAvisos();
+                    carregarMateriais();
+                }
+            } else {
+                document.getElementById('login-screen').style.display = "flex"; document.getElementById('app-screen').style.display = "none";
+                currentUserData = null; currentUserId = null; isSuperAdmin = false;
+                if(chatRefAtual) off(chatRefAtual);
+            }
+        });
+
+        function aplicarPermissoes(cargo) {
+            document.getElementById('card-prof-admin').classList.add('hidden');
+            document.getElementById('admin-materiais').classList.add('hidden');
+            document.getElementById('admin-cardapio').classList.add('hidden');
+            document.getElementById('admin-avisos').classList.add('hidden');
+
+            if(cargo === 'adm' || cargo === 'diretor' || cargo === 'coordenador') {
+                document.getElementById('card-prof-admin').classList.remove('hidden');
+                document.getElementById('admin-cardapio').classList.remove('hidden');
+                document.getElementById('admin-materiais').classList.remove('hidden');
+                document.getElementById('admin-avisos').classList.remove('hidden');
+            }
+            if(cargo === 'professor') document.getElementById('admin-materiais').classList.remove('hidden');
+            if(cargo === 'cozinheiro') document.getElementById('admin-cardapio').classList.remove('hidden');
+        }
+
+        // --- DIREÇÃO: SISTEMA DE AVISOS (CARDS) ---
+        window.salvarAviso = function() {
+            const titulo = document.getElementById('aviso-titulo').value;
+            const texto = document.getElementById('aviso-texto').value;
+            const tipo = document.getElementById('aviso-tipo').value;
+            if(!titulo || !texto) return alert("Preencha título e texto do aviso.");
+            
+            push(ref(db, 'Avisos/'), { titulo, texto, tipo, timestamp: Date.now() }).then(() => {
+                document.getElementById('aviso-titulo').value = ''; document.getElementById('aviso-texto').value = '';
+                carregarAvisos();
+            });
+        }
+
+        window.deletarAviso = function(key) {
+            if(confirm("Tem certeza que deseja deletar este aviso do mural?")) {
+                remove(ref(db, 'Avisos/' + key)).then(carregarAvisos);
+            }
+        }
+
+        function carregarAvisos() {
+            get(ref(db, 'Avisos')).then((snap) => {
+                const container = document.getElementById('lista-avisos');
+                container.innerHTML = '';
+                if(snap.exists()) {
+                    let avisos = [];
+                    snap.forEach(c => avisos.push({key: c.key, ...c.val()}));
+                    avisos.sort((a,b) => b.timestamp - a.timestamp); // Mais recentes primeiro
+                    
+                    avisos.forEach(a => {
+                        let isAlerta = a.tipo === 'alerta';
+                        let bg = isAlerta ? '#fef3c7' : '#e0e7ff';
+                        let border = isAlerta ? '#f59e0b' : '#10b981';
+                        let color = isAlerta ? '#92400e' : '#065f46';
+                        if(isDarkMode && !isAlerta) { bg = '#064e3b'; color = '#a7f3d0'; }
+                        
+                        let btnDel = isSuperAdmin ? `<button onclick="deletarAviso('${a.key}')" style="float:right; background:none; border:none; font-size:16px; cursor:pointer; color:red;">🗑️</button>` : '';
+                        container.innerHTML += `
+                            <div style="background: ${bg}; border-left: 4px solid ${border}; padding: 12px; border-radius: 8px; color: ${color}; font-size: 14px; margin-bottom: 10px;">
+                                ${btnDel}
+                                <strong>${a.titulo}:</strong> ${a.texto}
+                            </div>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = '<p style="color:#6b7280; font-size:14px;">Sem avisos recentes.</p>';
+                }
+            });
+        }
+
+        // --- SISTEMA DE MATERIAIS DOS PROFESSORES ---
+        window.salvarMaterial = function() {
+            const ano = document.getElementById('mat-ano').value;
+            const turma = document.getElementById('mat-turma').value;
+            const materia = document.getElementById('mat-materia').value.trim();
+            const dataStr = document.getElementById('mat-data').value.trim();
+            const titulo = document.getElementById('mat-titulo').value.trim();
+            const link = document.getElementById('mat-link').value.trim();
+            
+            if(!materia || !dataStr || !titulo) return alert("Por favor, preencha Matéria, Data e Título.");
+            
+            push(ref(db, 'Materiais/'), { 
+                ano, turma, materia, dataStr, titulo, link, 
+                autor: currentUserId, timestamp: Date.now() 
+            }).then(() => {
+                alert("Material enviado com sucesso!");
+                document.getElementById('mat-materia').value = '';
+                document.getElementById('mat-data').value = '';
+                document.getElementById('mat-titulo').value = '';
+                document.getElementById('mat-link').value = '';
+                carregarMateriais();
+            });
+        }
+
+        window.deletarMaterial = function(key) {
+            if(confirm("ATENÇÃO: Delete apenas o seu trabalho da sua matéria. Tem certeza que deseja deletar?")) {
+                remove(ref(db, 'Materiais/' + key)).then(carregarMateriais);
+            }
+        }
+
+        function carregarMateriais() {
+            get(ref(db, 'Materiais')).then((snap) => {
+                const container = document.getElementById('lista-materiais');
+                container.innerHTML = '';
+                if(snap.exists()) {
+                    let mats = [];
+                    snap.forEach(c => mats.push({key: c.key, ...c.val()}));
+                    mats.sort((a,b) => b.timestamp - a.timestamp);
+
+                    let count = 0;
+                    mats.forEach(m => {
+                        let minhaTurma = currentUserData.turma; // ex: "1A" ou "1EMB"
+                        let targetTurma = m.ano + m.turma;
+                        
+                        // Se for aluno ou líder, vê apenas o material da própria turma.
+                        if(['aluno', 'lider'].includes(currentUserData.cargo) && minhaTurma !== targetTurma) return;
+                        
+                        count++;
+                        let btnDel = (currentUserData.cargo === 'professor' || isSuperAdmin) ? `<button onclick="deletarMaterial('${m.key}')" style="background:none; border:none; font-size:16px; cursor:pointer; color:red; margin-left:10px;">🗑️</button>` : '';
+                        let linkHtml = m.link ? `<a href="${m.link}" target="_blank">Abrir ➔</a>` : '';
+                        
+                        container.innerHTML += `
+                            <div class="material-item">
+                                <div>
+                                    <span class="badge badge-diretor">${m.materia} - ${m.dataStr}</span>
+                                    <div style="font-weight: 700; font-size: 15px; margin-top:5px;">${m.titulo}</div>
+                                    <div style="font-size: 12px; color: #6b7280; margin-top:3px;">Ano/Turma: ${m.ano} - ${m.turma}</div>
+                                </div>
+                                <div style="display:flex; align-items:center;">
+                                    ${linkHtml}
+                                    ${btnDel}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    if(count === 0) container.innerHTML = '<p style="color:#6b7280; font-size:14px;">Nenhum material publicado para sua turma.</p>';
+                } else {
+                    container.innerHTML = '<p style="color:#6b7280; font-size:14px;">Ainda não há materiais publicados.</p>';
+                }
+            });
+        }
+
+        // --- SISTEMA DE PERFIL E BANIMENTO ---
+        window.abrirPerfil = async function(uid) {
+            const snap = await get(ref(db, 'Usuarios/' + uid));
+            if(snap.exists()) {
+                const u = snap.val();
+                perfilAbertoUid = uid; perfilAbertoNome = u.nome;
+
+                let roleView = u.cargo;
+                if (u.cargo === 'adm' && !isSuperAdmin) {
+                    roleView = 'aluno'; 
+                }
+
+                document.getElementById('modal-foto').src = getAvatarUrl(u.foto, uid);
+                document.getElementById('modal-nome').innerText = u.nome;
+                document.getElementById('modal-cargo').innerText = roleView.toUpperCase();
+                document.getElementById('modal-bio').innerText = u.bio || "Sem biografia.";
+                
+                document.getElementById('btn-chat-privado').style.display = (uid === currentUserId) ? 'none' : 'block';
+                document.getElementById('btn-banir').style.display = (isSuperAdmin && uid !== currentUserId && u.cargo !== 'adm') ? 'block' : 'none';
+                
+                document.getElementById('modal-overlay').style.display = 'flex';
+            }
+        }
+        window.fecharModal = function() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+        window.banirUsuario = function() {
+            if(confirm(`Tem certeza que deseja banir ${perfilAbertoNome}?`)) {
+                update(ref(db, 'Usuarios/' + perfilAbertoUid), { banned: true }).then(() => {
+                    alert("Usuário banido."); fecharModal();
+                });
+            }
+        }
+
+        // --- SISTEMA DE CHAT ---
+        window.iniciarChatPrivado = function() {
+            fecharModal();
+            const roomID = currentUserId < perfilAbertoUid ? `${currentUserId}_${perfilAbertoUid}` : `${perfilAbertoUid}_${currentUserId}`;
+            const tabPrivado = document.getElementById('tab-privado');
+            tabPrivado.style.display = 'block'; tabPrivado.innerText = "💬 " + perfilAbertoNome.split(' ')[0];
+            mudarAba('chat', document.getElementById('nav-chat'));
+            trocarSalaChat('Privado', tabPrivado, 'Privado_' + roomID);
+        }
+
+        window.trocarSalaChat = function(tipo, btn, customRoom = null) {
+            document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            
+            let novaSala = tipo === 'Geral' ? 'Geral' : tipo === 'Turma' ? 'Turma_' + currentUserData.turma : tipo === 'Privado' ? customRoom : salaAtual; 
+
+            if (salaAtual !== novaSala || !chatRefAtual) {
+                if (chatRefAtual) { off(chatRefAtual); cancelReply(); }
+                salaAtual = novaSala;
+                document.getElementById('chat-messages-container').innerHTML = ''; 
+                iniciarChat(salaAtual);
+            }
+        }
+
+        function formatLinks(text) { return text.replace(/(https?:\/\/[^\s]+)/g, "<a href='$1' target='_blank'>$1</a>"); }
+
+        // SWIPE PARA RESPONDER MENSAGEM
+        let touchStartX = 0;
+        let currentSwipeElem = null;
+
+        function handleTouchStart(e, elem) { 
+            touchStartX = e.changedTouches[0].screenX; 
+            currentSwipeElem = elem;
+            currentSwipeElem.style.transition = 'none';
+        }
+        
+        function handleTouchMove(e) {
+            if(!currentSwipeElem) return;
+            let moveX = e.changedTouches[0].screenX - touchStartX;
+            if(moveX > 0 && moveX < 80) currentSwipeElem.style.transform = `translateX(${moveX}px)`;
+        }
+
+        function handleTouchEnd(e, msgData, elem) {
+            if(!currentSwipeElem) return;
+            let touchEndX = e.changedTouches[0].screenX;
+            currentSwipeElem.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            currentSwipeElem.style.transform = 'translateX(0)';
+            if(touchEndX - touchStartX > 50) prepararResposta(msgData);
+            currentSwipeElem = null;
+        }
+
+        function prepararResposta(msgData) {
+            replyingTo = msgData;
+            document.getElementById('reply-banner').style.display = 'flex';
+            document.getElementById('reply-name').innerText = msgData.nome;
+            document.getElementById('reply-text').innerText = msgData.texto.substring(0, 30) + (msgData.texto.length > 30 ? "..." : "");
+            document.getElementById('chat-input').focus();
+        }
+        window.cancelarResposta = function() { cancelReply(); }
+        function cancelReply() { replyingTo = null; document.getElementById('reply-banner').style.display = 'none'; }
+
+        // APAGAR MENSAGENS NO CHAT
+        window.deletarMensagem = function(msgKey, isOwner) {
+            if(isOwner || isSuperAdmin) {
+                if(confirm("Apagar esta mensagem para todos?")) remove(ref(db, 'Chat/' + salaAtual + '/' + msgKey));
+            } else {
+                if(confirm("Ocultar esta mensagem para você?")) {
+                    hiddenMsgs.push(msgKey);
+                    localStorage.setItem('hiddenMsgs', JSON.stringify(hiddenMsgs));
+                    document.getElementById('msg-' + msgKey).remove();
+                }
+            }
+        }
+
+        function iniciarChat(caminhoSala) {
+            chatRefAtual = ref(db, 'Chat/' + caminhoSala);
+            
+            onChildAdded(chatRefAtual, (data) => {
+                const msgKey = data.key;
+                if (document.getElementById('msg-' + msgKey) || hiddenMsgs.includes(msgKey)) return;
+
+                const msg = data.val();
+                const isMine = msg.uid === currentUserId;
+                const container = document.getElementById('chat-messages-container');
+                
+                const wrapper = document.createElement('div');
+                wrapper.id = 'msg-' + msgKey; 
+                wrapper.className = `msg-wrapper ${isMine ? 'mine' : 'others'}`;
+                
+                wrapper.addEventListener('touchstart', (e) => handleTouchStart(e, wrapper), {passive: true});
+                wrapper.addEventListener('touchmove', handleTouchMove, {passive: true});
+                wrapper.addEventListener('touchend', (e) => handleTouchEnd(e, msg, wrapper));
+                
+                const timeStr = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                let replyHtml = "";
+                if(msg.replyTo) replyHtml = `<div class="reply-quote"><strong>${msg.replyTo.nome}</strong><br>${msg.replyTo.texto}</div>`;
+
+                let btnDel = isMine || isSuperAdmin ? `<button class="action-btn" onclick="deletarMensagem('${msgKey}', true)">🗑️ Apagar</button>` : `<button class="action-btn" onclick="deletarMensagem('${msgKey}', false)">👁️‍🗨️ Ocultar</button>`;
+
+                wrapper.innerHTML = `
+                    <div class="msg-actions">${btnDel}</div>
+                    <img src="${getAvatarUrl(msg.foto, msg.uid)}" class="avatar msg-avatar" onclick="abrirPerfil('${msg.uid}')">
+                    <div class="msg-content">
+                        <span class="msg-sender">${msg.nome}</span>
+                        <div class="msg-bubble">
+                            ${replyHtml}
+                            ${formatLinks(msg.texto)}
+                            <span class="msg-time">${timeStr}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+                container.scrollTop = container.scrollHeight;
+                
+                if(Date.now() - msg.timestamp < 5000 && !isMine) document.getElementById('snd-recv').play().catch(()=>{});
+            });
+
+            onChildRemoved(chatRefAtual, (data) => {
+                const el = document.getElementById('msg-' + data.key);
+                if(el) {
+                    el.style.transform = "scale(0)";
+                    setTimeout(() => el.remove(), 200);
+                }
+            });
+        }
+
+        document.getElementById('btn-send-msg').addEventListener('click', enviarMensagem);
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') enviarMensagem(); });
+
+        function enviarMensagem() {
+            const input = document.getElementById('chat-input');
+            const texto = input.value.trim();
+            if(!texto) return;
+            
+            let payload = {
+                uid: currentUserId, nome: currentUserData.nome.split(' ')[0], foto: currentUserData.foto || "",
+                texto: texto, timestamp: Date.now()
+            };
+
+            if(replyingTo) payload.replyTo = { nome: replyingTo.nome, texto: replyingTo.texto };
+
+            input.value = '';
+            cancelReply();
+            document.getElementById('snd-send').play().catch(()=>{});
+
+            push(ref(db, 'Chat/' + salaAtual), payload).catch(() => alert("Erro ao enviar."));
+        }
+
+        // --- SISTEMA DE BUSCA DE PESSOAS ---
+        window.pesquisarUsuarios = async function() {
+            const t = document.getElementById('input-pesquisa').value.toLowerCase();
+            const res = document.getElementById('resultado-pesquisa');
+            if(!t) return res.innerHTML = '<p>Digite algo.</p>';
+            res.innerHTML = '<p>Buscando...</p>';
+            const snap = await get(ref(db, 'Usuarios'));
+            if(snap.exists()) {
+                res.innerHTML = ''; let enc = false;
+                snap.forEach(c => {
+                    const u = c.val(); 
+                    let displayCargo = u.cargo;
+                    if(u.cargo === 'adm' && !isSuperAdmin) displayCargo = 'aluno';
+
+                    if(u.nome.toLowerCase().includes(t) || (u.turma && u.turma.toLowerCase().includes(t))) {
+                        enc = true;
+                        res.innerHTML += `
+                            <div class="material-item" onclick="abrirPerfil('${c.key}')" style="cursor:pointer;">
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    <img src="${getAvatarUrl(u.foto, c.key)}" style="width:40px;height:40px;border-radius:50%;">
+                                    <div><strong>${u.nome}</strong><br><span style="font-size:12px;color:var(--primary);">${displayCargo.toUpperCase()}</span></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                if(!enc) res.innerHTML = '<p>Ninguém encontrado.</p>';
+            }
+        }
+
+        // --- CARDÁPIO ---
+        window.salvarCardapio = function() {
+            set(ref(db, 'Cardapio/' + document.getElementById('card-dia').value), document.getElementById('card-desc').value)
+            .then(() => { document.getElementById('card-desc').value = ''; carregarCardapio(); });
+        }
+        
+        window.deletarCardapio = function(dia) {
+            if(confirm(`Deseja limpar o cardápio de ${dia}?`)) {
+                remove(ref(db, 'Cardapio/' + dia)).then(carregarCardapio);
+            }
+        }
+
+        function carregarCardapio() {
+            get(ref(db, 'Cardapio')).then((snap) => {
+                const c = document.getElementById('lista-cardapio'); c.innerHTML = '';
+                if(snap.exists()){
+                    const m = snap.val();
+                    const diasSemana = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta'];
+                    let temComida = false;
+                    
+                    diasSemana.forEach(d => {
+                        if(m[d]) {
+                            temComida = true;
+                            let btnDel = (currentUserData.cargo === 'cozinheiro' || isSuperAdmin) ? `<button onclick="deletarCardapio('${d}')" style="float:right; background:none; border:none; cursor:pointer; color:red; font-size:14px;">🗑️ Deletar Dia</button>` : '';
+                            c.innerHTML += `<div style="padding:15px; border:1px solid var(--border-color); border-radius:12px; background:var(--input-bg);">
+                                ${btnDel}
+                                <span class="badge badge-lider">${d.replace('c', 'ç')}</span>
+                                <p style="margin-top:5px; font-weight: 500;">${m[d]}</p>
+                            </div>`;
+                        }
+                    });
+                    if(!temComida) c.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Nenhum cardápio cadastrado.</p>";
+                } else c.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Nenhum cardápio cadastrado.</p>";
+            });
+        }
+
+        // --- PERFIL DO USUÁRIO ---
+        document.getElementById('btn-toggle-edit').addEventListener('click', () => {
+            const area = document.getElementById('area-edicao');
+            area.classList.toggle('hidden');
+        });
+
+        document.getElementById('btn-save-profile').addEventListener('click', () => {
+            const f = document.getElementById('edit-foto').value; const b = document.getElementById('edit-bio').value;
+            update(ref(db, 'Usuarios/' + currentUserId), { foto: f, bio: b }).then(() => {
+                currentUserData.foto = f; currentUserData.bio = b;
+                document.getElementById('meu-avatar-preview').src = getAvatarUrl(f, currentUserId);
+                document.getElementById('area-edicao').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
+
